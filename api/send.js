@@ -1,32 +1,42 @@
 import { google } from "googleapis";
 
 export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'https://sisatu-fcm.vercel.app/api/send');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // Set CORS headers - IMPORTANT: Set these FIRST, before any other logic
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'false');
 
   // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
+  // Only allow POST for the actual request
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  // Input validation
-  const { title, body } = req.body;
-  if (!title && !body) {
-    return res.status(400).json({ error: "Title or body is required" });
+    return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
 
   try {
+    // Input validation
+    const { title, body } = req.body || {};
+
+    if (!title && !body) {
+      return res.status(400).json({ error: "At least title or body is required" });
+    }
+
+    // Validate environment variables
+    if (!process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_PROJECT_ID) {
+      console.error('Missing Firebase environment variables');
+      return res.status(500).json({ error: "Server configuration error" });
+    }
+
     // Auth with Google service account
     const jwtClient = new google.auth.JWT(
       process.env.FIREBASE_CLIENT_EMAIL,
       null,
-      process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
       ["https://www.googleapis.com/auth/firebase.messaging"],
       null
     );
@@ -35,7 +45,7 @@ export default async function handler(req, res) {
     const token = await jwtClient.getAccessToken();
 
     // Send message via FCM v1 API
-    const response = await fetch(
+    const fcmResponse = await fetch(
       `https://fcm.googleapis.com/v1/projects/${process.env.FIREBASE_PROJECT_ID}/messages:send`,
       {
         method: "POST",
@@ -58,17 +68,29 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    const fcmData = await fcmResponse.json();
 
     // Check if FCM request was successful
-    if (!response.ok) {
-      console.error('FCM Error:', data);
-      return res.status(500).json({ error: "Failed to send notification" });
+    if (!fcmResponse.ok) {
+      console.error('FCM Error:', fcmData);
+      return res.status(500).json({
+        error: "Failed to send notification",
+        details: fcmData.error?.message || "Unknown FCM error"
+      });
     }
 
-    res.status(200).json({ success: true, messageId: data.name });
+    // Success response
+    res.status(200).json({
+      success: true,
+      messageId: fcmData.name,
+      message: "Notification sent successfully"
+    });
+
   } catch (error) {
     console.error('Push notification error:', error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      error: "Internal server error",
+      message: process.env.NODE_ENV === 'development' ? error.message : "Something went wrong"
+    });
   }
 }
