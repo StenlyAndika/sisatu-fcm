@@ -55,7 +55,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           message: {
-            topic: "news",
+            topic: "guests",
             notification: {
               title: title || "New Update",
               body: body || "Check the app for details",
