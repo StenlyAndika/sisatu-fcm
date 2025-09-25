@@ -1,18 +1,32 @@
 import { google } from "googleapis";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed v1" });
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', 'https://sisatu-fcm.vercel.app/api/send');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  // Input validation
   const { title, body } = req.body;
+  if (!title && !body) {
+    return res.status(400).json({ error: "Title or body is required" });
+  }
 
   try {
     // Auth with Google service account
     const jwtClient = new google.auth.JWT(
       process.env.FIREBASE_CLIENT_EMAIL,
       null,
-      process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       ["https://www.googleapis.com/auth/firebase.messaging"],
       null
     );
@@ -45,8 +59,16 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
-    res.status(200).json({ success: true, data });
+
+    // Check if FCM request was successful
+    if (!response.ok) {
+      console.error('FCM Error:', data);
+      return res.status(500).json({ error: "Failed to send notification" });
+    }
+
+    res.status(200).json({ success: true, messageId: data.name });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Push notification error:', error);
+    res.status(500).json({ error: "Internal server error" });
   }
 }
