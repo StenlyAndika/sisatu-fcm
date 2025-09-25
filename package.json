@@ -1,5 +1,8 @@
 {
-  "name": "sisatu-fcm",
+  "name": "fcm-backend",
   "version": "1.0.0",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "googleapis": "^135.0.0"
+  }
 }

@@ -2,42 +2,36 @@ import { google } from "googleapis";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ error: "Method not allowed v1" });
   }
 
   const { title, body } = req.body;
 
   try {
-    // Parse the service account JSON from Vercel env
-    const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
-
-    // Create JWT client with Firebase messaging scope
+    // Auth with Google service account
     const jwtClient = new google.auth.JWT(
-      serviceAccount.client_email,
+      process.env.FIREBASE_CLIENT_EMAIL,
       null,
-      serviceAccount.private_key,
-      ["https://www.googleapis.com/auth/firebase.messaging"]
+      process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      ["https://www.googleapis.com/auth/firebase.messaging"],
+      null
     );
 
-    // Authorize and get access token
-    const tokens = await jwtClient.authorize();
-    const accessToken = tokens.access_token;
+    await jwtClient.authorize();
+    const token = await jwtClient.getAccessToken();
 
-    // Firebase Project ID (from service account JSON)
-    const projectId = serviceAccount.project_id;
-
-    // Send message using HTTP v1
+    // Send message via FCM v1 API
     const response = await fetch(
-      `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+      `https://fcm.googleapis.com/v1/projects/${process.env.FIREBASE_PROJECT_ID}/messages:send`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          Authorization: `Bearer ${token.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           message: {
-            topic: "news", // all devices subscribed to topic "news"
+            topic: "news",
             notification: {
               title: title || "New Update",
               body: body || "Check the app for details",
@@ -52,9 +46,7 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     res.status(200).json({ success: true, data });
-
   } catch (error) {
-    console.error("Error sending FCM:", error);
     res.status(500).json({ error: error.message });
   }
 }
