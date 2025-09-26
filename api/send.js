@@ -7,32 +7,27 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.setHeader('Access-Control-Allow-Credentials', 'false');
 
-  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
-  // Only allow POST for the actual request
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
 
   try {
-    // Input validation
     const { title, body } = req.body || {};
 
     if (!title && !body) {
       return res.status(400).json({ error: "At least title or body is required" });
     }
 
-    // Validate environment variables
     if (!process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_PROJECT_ID) {
       console.error('Missing Firebase environment variables');
       return res.status(500).json({ error: "Server configuration error" });
     }
 
-    // Auth with Google service account
     const jwtClient = new google.auth.JWT(
       process.env.FIREBASE_CLIENT_EMAIL,
       null,
@@ -56,13 +51,18 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           message: {
             topic: "guests",
-            notification: {
+            data: {
               title: title || "New Update",
               body: body || "Check the app for details",
+              bidang: "kantal",
             },
-            data: {
-              click_action: "FLUTTER_NOTIFICATION_CLICK",
-            },
+            // notification: {
+            //   title: title || "New Update",
+            //   body: body || "Check the app for details",
+            // },
+            // data: {
+            //   click_action: "FLUTTER_NOTIFICATION_CLICK",
+            // },
           },
         }),
       }
@@ -70,7 +70,6 @@ export default async function handler(req, res) {
 
     const fcmData = await fcmResponse.json();
 
-    // Check if FCM request was successful
     if (!fcmResponse.ok) {
       console.error('FCM Error:', fcmData);
       return res.status(500).json({
@@ -79,7 +78,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // Success response
     res.status(200).json({
       success: true,
       messageId: fcmData.name,
