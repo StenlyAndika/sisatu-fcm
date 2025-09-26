@@ -54,7 +54,7 @@ export default async function handler(req, res) {
             data: {
               title: title || "New Update",
               body: body || "Check the app for details",
-              bidang: "sekretariat",
+              bidang: bidang || "sekretariat",
             },
           },
         }),
