@@ -59,11 +59,12 @@ export default async function handler(req, res) {
             data: {
               title: title || "New Update",
               body: body || "Check the app for details",
-              bidang: bidang || "sekretariat",
-            // },
-            // data: {
-              click_action: "FLUTTER_NOTIFICATION_CLICK",
+              bidang: bidang || "Umum",
+              click_action: "FLUTTER_NOTIFICATION_CLICK"
             },
+            android: {
+              priority: "high"
+            }
           },
         }),
       }
