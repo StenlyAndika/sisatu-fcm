@@ -59,6 +59,7 @@ export default async function handler(req, res) {
             notification: {
               title: title || "New Update",
               body: body || "Check the app for details",
+              bidang: bidang || "sekretariat",
             },
             data: {
               click_action: "FLUTTER_NOTIFICATION_CLICK",
