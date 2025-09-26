@@ -54,15 +54,7 @@ export default async function handler(req, res) {
             data: {
               title: title || "New Update",
               body: body || "Check the app for details",
-              bidang: "kantal",
-            },
-            // notification: {
-            //   title: title || "New Update",
-            //   body: body || "Check the app for details",
-            // },
-            // data: {
-            //   click_action: "FLUTTER_NOTIFICATION_CLICK",
-            // },
+              bidang: req.body.bidang || "sekretariat"
           },
         }),
       }
