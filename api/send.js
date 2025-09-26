@@ -74,7 +74,7 @@ export default async function handler(req, res) {
     res.status(200).json({
       success: true,
       messageId: fcmData.name,
-      message: "Notification sent successfully"
+      message: "Notification sent successfully from fcm"
     });
 
   } catch (error) {
