@@ -56,12 +56,12 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           message: {
             topic: "guests",
-            notification: {
+            data: {
               title: title || "New Update",
               body: body || "Check the app for details",
               bidang: bidang || "sekretariat",
-            },
-            data: {
+            // },
+            // data: {
               click_action: "FLUTTER_NOTIFICATION_CLICK",
             },
           },
