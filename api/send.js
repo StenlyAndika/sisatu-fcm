@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { title, body, bidang } = req.body || {};
+    const { title, body } = req.body || {};
 
     if (!title && !body) {
       return res.status(400).json({ error: "At least title or body is required" });
@@ -56,7 +56,6 @@ export default async function handler(req, res) {
                     body: body || "Check the app for details",
                 },
                 data: {
-                    // bidang: bidang || "sekretariat",
                     click_action: "FLUTTER_NOTIFICATION_CLICK",
                 },
             },
