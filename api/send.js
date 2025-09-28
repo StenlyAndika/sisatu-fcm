@@ -51,10 +51,31 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           message: {
             topic: "guests",
+            // High-priority notification payload (shows even when app is killed)
+            notification: {
+                title: title || "New Update",
+                body: body || "Check the app for details",
+            },
+            // Custom data (accessible in your handlers)
             data: {
-              title: title || "New Update",
-              body: body || "Check the app for details",
-              bidang: bidang || "sekretariat",
+                title: title || "New Update",
+                body: body || "Check the app for details",
+                bidang: bidang || "sekretariat",
+                click_action: "FLUTTER_NOTIFICATION_CLICK", // For handling taps
+            },
+            // Android-specific high-priority settings
+            android: {
+                priority: "high",           // High priority delivery
+                ttl: "0s",                  // Don't queue - deliver immediately or discard
+                notification: {
+                    channel_id: "sisatu_default_channel", // Use your high-priority channel
+                    priority: "high",
+                    visibility: "public",
+                    notification_count: 1,
+                    // Wake screen and bypass DND
+                    default_sound: true,
+                    default_vibrate_timings: true,
+                },
             },
           },
         }),
