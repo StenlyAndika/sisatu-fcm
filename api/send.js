@@ -50,13 +50,12 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
             message: {
-                topic: "guests",
+                topic: bidang,
                 notification: {
                     title: title || "New Update",
                     body: body || "Check the app for details",
                 },
                 data: {
-                    bidang: bidang || "sekretariat",
                     click_action: "FLUTTER_NOTIFICATION_CLICK",
                 },
             },
