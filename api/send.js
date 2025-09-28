@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { title, body, bidang } = req.body || {};
+    const { title, body } = req.body || {};
 
     if (!title && !body) {
       return res.status(400).json({ error: "At least title or body is required" });
@@ -49,29 +49,16 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: {
-            topic: "guests",
-            data: {
-                title: title || "New Update",
-                body: body || "Check the app for details",
-                bidang: bidang || "sekretariat",
-            },
-            // HIGH PRIORITY - This is crucial for data-only messages
-            android: {
-                priority: "high",        // Ensures background handler runs quickly
-                ttl: "0s",              // Immediate delivery or discard
-            },
-            apns: {
-                headers: {
-                    "apns-priority": "10", // iOS immediate delivery
+            message: {
+                topic: "guests",
+                notification: {
+                    title: title || "New Update",
+                    body: body || "Check the app for details",
                 },
-                payload: {
-                    aps: {
-                    "content-available": 1, // Allows background processing
-                    },
+                data: {
+                    click_action: "FLUTTER_NOTIFICATION_CLICK",
                 },
             },
-          },
         }),
       }
     );
