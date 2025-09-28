@@ -56,7 +56,7 @@ export default async function handler(req, res) {
                     body: body || "Check the app for details",
                 },
                 data: {
-                    bidang: bidang || "sekretariat",
+                    // bidang: bidang || "sekretariat",
                     click_action: "FLUTTER_NOTIFICATION_CLICK",
                 },
             },
