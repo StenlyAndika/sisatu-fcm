@@ -50,8 +50,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
             message: {
-                // topic: "guests",
-                token: "dFFohml8TZKqgtgPNg3Wnm:APA91bE_U1E-l-eZDiIV9fgwh7SYWSYCHEp2623xpm2XnWO5cAMjh59RFXNgr4YJaBetRp3EOO_WEuVF5tygEnnH9w46P2Kg7EVP0B-wLY-JKJaf5LIjDbM",
+                topic: "guests",
                 notification: {
                     title: title || "New Update",
                     body: body || "Check the app for details",
